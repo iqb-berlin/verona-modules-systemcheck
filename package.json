@@ -1,10 +1,11 @@
 {
   "name": "verona-modules-systemcheck",
-  "version": "0.0.0",
+  "version": "0.1.2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production --output-hashing=none",
+    "postbuild": "node projects/tools/distpacker.js dist/player/browser index_packed.html",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

@@ -13,7 +13,7 @@
       <syscheck-player-welcome />
     }
     @case ('SYSTEM') {
-      <syscheck-player-system-check [viewParameters]="systemContextViewParameters" />
+      <syscheck-player-system-check [viewParameters]="systemContextViewParameters" [messages]="systemCheckMessages" />
     }
     @case ('NETWORK') {
       <syscheck-player-network-check [viewParameters]="networkViewParameters" [directDownloadUrl]="playerConfig()?.directDownloadUrl" />

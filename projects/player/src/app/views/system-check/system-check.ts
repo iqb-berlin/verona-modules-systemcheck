@@ -1,7 +1,9 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import { CheckRow, CheckRowStatus } from '../../components/check-row/check-row';
-import { BrowserLimit, OsLimit, SystemContextViewParameters } from '../../interfaces/unit';
+import {
+  BrowserLimit, OsLimit, SystemCheckMessages, SystemContextViewParameters
+} from '../../interfaces/unit';
 import { SystemInfoService } from '../../services/system-info.service';
 
 export interface SystemInfoRow {
@@ -27,24 +29,20 @@ function versionAtLeast(actual: string, required: string): boolean {
 function evaluateNamedLimit(
   label: string,
   detected: string,
-  detectedName: string,
-  detectedVersion: string,
   limit: BrowserLimit | OsLimit | undefined,
-  checkMessage: string | undefined
+  detectedVersion: string,
+  notSupportedMessage: string | undefined,
+  versionNotSupportedMessage: string | undefined
 ): SystemInfoRow {
   if (!limit) {
-    return {
-      label, detected, status: 'warning', message: `${detectedName} is not on the list of checked ${label.toLowerCase()}s; compatibility cannot be verified.`
-    };
+    return { label, detected, status: 'warning', message: notSupportedMessage };
   }
   if (!limit.minVersion) {
-    return {
-      label, detected, status: 'warning', message: limit.message ?? `No minimum version configured for ${detectedName}; compatibility cannot be verified.`
-    };
+    return { label, detected, status: 'warning', message: limit.message ?? notSupportedMessage };
   }
   const passed = versionAtLeast(detectedVersion, limit.minVersion);
   return {
-    label, detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : (limit.message ?? checkMessage)
+    label, detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : (limit.message ?? versionNotSupportedMessage)
   };
 }
 
@@ -58,6 +56,7 @@ export class SystemCheck {
   private readonly systemInfo = inject(SystemInfoService);
 
   viewParameters = input.required<SystemContextViewParameters>();
+  messages = input<SystemCheckMessages>();
 
   readonly browserRow = computed<SystemInfoRow>(() => {
     const name = this.systemInfo.browserName;
@@ -66,7 +65,8 @@ export class SystemCheck {
     const config = this.viewParameters().browser;
     if (!config?.enabled) return { label: 'Browser', detected };
     const limit = config.limits.find(l => l.browser.toLowerCase() === name.toLowerCase());
-    return evaluateNamedLimit('Browser', detected, name, version, limit, config.message);
+    const messages = this.messages();
+    return evaluateNamedLimit('Browser', detected, limit, version, messages?.browser_not_supported, messages?.browser_version_not_supported);
   });
 
   readonly osRow = computed<SystemInfoRow>(() => {
@@ -76,7 +76,8 @@ export class SystemCheck {
     const config = this.viewParameters().os;
     if (!config?.enabled) return { label: 'Operating system', detected };
     const limit = config.limits.find(l => l.os.toLowerCase() === name.toLowerCase());
-    return evaluateNamedLimit('Operating system', detected, name, version, limit, config.message);
+    const messages = this.messages();
+    return evaluateNamedLimit('Operating system', detected, limit, version, messages?.os_not_supported, messages?.os_version_not_supported);
   });
 
   readonly resolutionRow = computed<SystemInfoRow>(() => {
@@ -87,7 +88,7 @@ export class SystemCheck {
     const passed = config.limits.length === 0
       || config.limits.some(limit => width >= limit.width && height >= limit.height);
     return {
-      label: 'Screen resolution', detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : config.message
+      label: 'Screen resolution', detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : this.messages()?.resolution_not_supported
     };
   });
 
@@ -115,5 +116,9 @@ export class SystemCheck {
 
   readonly hasChecks = computed<boolean>(
     () => this.rows().some(row => row.status !== undefined)
+  );
+
+  readonly overallMessage = computed<string | undefined>(
+    () => (this.allPassed() ? this.messages()?.success : this.messages()?.error)
   );
 }

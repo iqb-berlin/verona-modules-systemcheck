@@ -15,8 +15,7 @@
           "minVersion": "145",
           "message": "min required version: 145"
         }
-      ],
-      "message": "Your browser is not supported."
+      ]
     },
     "os": {
       "enabled": true,
@@ -40,18 +39,25 @@
         {
           "os": "linux"
         }
-      ],
-      "message": "Your OS is not supported."
+      ]
     },
     "resolution": {
       "enabled": true,
       "limits": [
         {
-          "width": 1600,
+          "width": 1200,
           "height": 800
         }
-      ],
-      "message": "Your screen resolution is not supported."
+      ]
     }
+  },
+  "messages": {
+    "success": "Your system is good.",
+    "error": "Your system is not supported.",
+    "os_not_supported": "Your OS is not supported.",
+    "browser_not_supported": "Your browser is not supported.",
+    "resolution_not_supported": "Your screen resolution is not supported.",
+    "os_version_not_supported": "Your OS version is not supported.",
+    "browser_version_not_supported": "Your browser version is not supported."
   }
 }

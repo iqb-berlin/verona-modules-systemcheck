@@ -2,7 +2,9 @@ import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { fromEvent } from 'rxjs';
 
-import { NetworkViewParameters, SystemContextViewParameters, Unit } from './interfaces/unit';
+import {
+  NetworkViewParameters, SystemCheckMessages, SystemContextViewParameters, Unit
+} from './interfaces/unit';
 import { FileService } from './services/file.service';
 import { Welcome } from './views/welcome/welcome';
 import { SystemCheck } from './views/system-check/system-check';
@@ -51,6 +53,10 @@ export class App implements OnInit {
 
   get networkViewParameters(): NetworkViewParameters {
     return (this.unit()?.viewParameters as NetworkViewParameters) ?? {};
+  }
+
+  get systemCheckMessages(): SystemCheckMessages {
+    return this.unit()?.messages ?? {};
   }
 
   async loadUnitFromFile(eventTarget: EventTarget | null): Promise<void> {

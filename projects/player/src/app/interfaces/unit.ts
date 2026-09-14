@@ -5,7 +5,18 @@ export interface Unit {
   version: string;
   viewType: viewTypes;
   viewParameters?: SystemContextViewParameters | NetworkViewParameters;
+  messages?: SystemCheckMessages;
   textOverrides?: Record<Textoverrides, string>;
+}
+
+export interface SystemCheckMessages {
+  success?: string;
+  error?: string;
+  os_not_supported?: string;
+  browser_not_supported?: string;
+  resolution_not_supported?: string;
+  os_version_not_supported?: string;
+  browser_version_not_supported?: string;
 }
 
 export interface BrowserLimit {
@@ -29,19 +40,16 @@ export interface ResolutionLimit {
 export interface BrowserCheckParameters {
   enabled: boolean;
   limits: BrowserLimit[];
-  message?: string;
 }
 
 export interface OsCheckParameters {
   enabled: boolean;
   limits: OsLimit[];
-  message?: string;
 }
 
 export interface ResolutionCheckParameters {
   enabled: boolean;
   limits: ResolutionLimit[];
-  message?: string;
 }
 
 export interface SystemContextViewParameters {
