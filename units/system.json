@@ -1,0 +1,57 @@
+{
+  "id": "syscheck-unit-definition",
+  "version": "0.1",
+  "viewType": "SYSTEM",
+  "viewParameters": {
+    "browser": {
+      "enabled": true,
+      "limits": [
+        {
+          "browser": "chrome",
+          "minVersion": "143"
+        },
+        {
+          "browser": "safari",
+          "minVersion": "145",
+          "message": "min required version: 145"
+        }
+      ],
+      "message": "Your browser is not supported."
+    },
+    "os": {
+      "enabled": true,
+      "limits": [
+        {
+          "os": "windows",
+          "minVersion": "10"
+        },
+        {
+          "os": "ios",
+          "minVersion": "15"
+        },
+        {
+          "os": "android",
+          "minVersion": "12"
+        },
+        {
+          "os": "macos",
+          "minVersion": "12"
+        },
+        {
+          "os": "linux"
+        }
+      ],
+      "message": "Your OS is not supported."
+    },
+    "resolution": {
+      "enabled": true,
+      "limits": [
+        {
+          "width": 1600,
+          "height": 800
+        }
+      ],
+      "message": "Your screen resolution is not supported."
+    }
+  }
+}

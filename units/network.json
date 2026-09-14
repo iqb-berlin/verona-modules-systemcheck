@@ -1,0 +1,48 @@
+{
+  "id": "syscheck-unit-definition",
+  "version": "0.1",
+  "viewType": "NETWORK",
+  "viewParameters": {
+    "download": {
+      "items": [
+        320000,
+        640000,
+        1280000,
+        2560000,
+        5120000
+      ],
+      "urlList": [
+        "http://ipv4.download.thinkbroadband.com/20MB.zip",
+        "http://ipv4.download.thinkbroadband.com/10MB.zip",
+        "http://ipv4.download.thinkbroadband.com/5MB.zip"
+      ],
+      "minSpeed": 100000,
+      "goodSpeed": 320000,
+      "maxDeviance": 20000,
+      "maxErrorPerSequence": 0,
+      "maxSequenceRepetition": 3,
+      "message": "Download speed is too slow."
+    },
+    "upload": {
+      "items": [
+        32000,
+        64000,
+        128000
+      ],
+      "minSpeed": 10000,
+      "goodSpeed": 32000,
+      "maxDeviance": 5000,
+      "maxErrorPerSequence": 0,
+      "maxSequenceRepetition": 3,
+      "message": "Upload speed is too slow."
+    },
+    "messages": {
+      "success": "Your connection is good.",
+      "error": "Connection not possible.",
+      "slow": "Your connection is too slow."
+    },
+    "help": {
+      "success": "Your connection is good."
+    }
+  }
+}

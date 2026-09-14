@@ -15,4 +15,21 @@ export class FileService {
       asBase64 ? reader.readAsDataURL(file) : reader.readAsText(file);
     });
   }
+
+  static async loadFile(extensions: string[]): Promise<{ content: string } | undefined> {
+    return new Promise(resolve => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = extensions.join(',');
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        if (!file) {
+          resolve(undefined);
+          return;
+        }
+        resolve({ content: await FileService.readFileAsText(file) });
+      };
+      input.click();
+    });
+  }
 }

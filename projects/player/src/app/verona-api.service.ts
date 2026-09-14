@@ -1,5 +1,7 @@
 import { Subject } from 'rxjs';
 
+import { PlayerConfig } from '../../../verona/verona';
+
 export class VeronaAPIService {
   private static sessionID: string | undefined;
   static startCommand$ = new Subject<StartCommand>();
@@ -73,6 +75,7 @@ export interface StartCommand {
   unitState?: {
     dataParts: Record<string, string>;
   }
+  playerConfig?: PlayerConfig;
 }
 
 // Outgoing
