@@ -13,10 +13,19 @@
       <syscheck-player-welcome />
     }
     @case ('SYSTEM') {
-      <syscheck-player-system-check [viewParameters]="systemContextViewParameters" [messages]="systemCheckMessages" />
+      <syscheck-player-system-check
+        [viewParameters]="systemContextViewParameters"
+        [messages]="systemCheckMessages"
+        (stateChanged)="onSystemCheckStateChanged($event)"
+        (nextStep)="onNextStep()"
+      />
     }
     @case ('NETWORK') {
-      <syscheck-player-network-check [viewParameters]="networkViewParameters" [directDownloadUrl]="playerConfig()?.directDownloadUrl" />
+      <syscheck-player-network-check
+        [viewParameters]="networkViewParameters"
+        [directDownloadUrl]="resourceURL"
+        (nextStep)="onNextStep()"
+      />
     }
     @default {
       <p>Unsupported view type: {{ currentUnit.viewType }}</p>

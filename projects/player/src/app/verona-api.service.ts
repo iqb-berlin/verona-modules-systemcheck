@@ -1,127 +1,65 @@
-import { Subject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Response } from '@iqbspecs/response/response.interface';
 
-import { PlayerConfig } from '../../../verona/verona';
+import { VeronaPostService } from '../../../verona/verona-post.service';
+import { VeronaSubscriptionService } from '../../../verona/verona-subscription.service';
+import { UnitStateDataType, VopMetaData, VopStartCommand } from '../../../verona/verona';
 
+/**
+ * Thin adapter over VeronaPostService/VeronaSubscriptionService (projects/verona) tailored
+ * to what this player needs: extracting metadata from the DOM for the ready notification,
+ * bridging the incoming sessionId/resourceURL into those services, and shaping unit state.
+ */
+@Injectable({
+  providedIn: 'root'
+})
 export class VeronaAPIService {
-  private static sessionID: string | undefined;
-  static startCommand$ = new Subject<StartCommand>();
+  private readonly veronaPost = inject(VeronaPostService);
+  private readonly veronaSubscription = inject(VeronaSubscriptionService);
 
-  static handleMessage(messageData: StartCommand): void {
-    switch (messageData.type) {
-      case 'vopStartCommand':
-        VeronaAPIService.sessionID = messageData.sessionId;
-        VeronaAPIService.startCommand$.next(messageData as StartCommand);
-        break;
-      // no default
-    }
-  }
+  readonly startCommand$ = this.veronaSubscription.vopStartCommand;
 
-  private static sendMessage(
-    message: ReadyNotification | StateChangeNotification | NavRequestNotification | FocusChangeNotification): void {
-    window.parent.postMessage(message, '*');
-  }
-
-  static sendReady(): void {
-    const metadata: string | null | undefined = document.getElementById('verona-metadata')?.textContent;
-    VeronaAPIService.sendMessage({
-      type: 'vopReadyNotification',
-      metadata: metadata ? JSON.parse(metadata) : {}
+  constructor() {
+    this.startCommand$.subscribe((message: VopStartCommand) => {
+      this.veronaPost.sessionID = message.sessionId;
+      this.veronaSubscription.resourceURL = message.playerConfig?.directDownloadUrl;
     });
   }
 
-  static sendNavRequest() {
-    VeronaAPIService.sendMessage({
-      type: 'vopUnitNavigationRequestedNotification',
-      sessionId: VeronaAPIService.sessionID as string,
-      target: 'next'
-    });
+  get resourceURL(): string | undefined {
+    return this.veronaSubscription.resourceURL;
   }
 
-  static sendState(responseData: Record<string, Response[]>): void {
-    VeronaAPIService.sendMessage({
-      type: 'vopStateChangedNotification',
-      sessionId: VeronaAPIService.sessionID as string,
-      timeStamp: String(Date.now()),
+  sendReady(): void {
+    const metadataText = document.getElementById('meta_data')?.textContent;
+    const metadata = (metadataText ? JSON.parse(metadataText) : {}) as VopMetaData;
+    this.veronaPost.sendReadyNotification(metadata);
+  }
+
+  sendNavRequest(): void {
+    this.veronaPost.sendVopUnitNavigationRequestedNotification('next');
+  }
+
+  sendState(dataParts: Record<string, Response[]>): void {
+    const hasData = Object.keys(dataParts).length > 0;
+    this.veronaPost.sendVopStateChangedNotification({
       unitState: {
-        unitStateDataType: 'iqb-standard@1.0',
+        unitStateDataType: UnitStateDataType,
         presentationProgress: 'complete',
-        responseProgress: Object.keys(responseData).length > 0 ? 'complete' : 'none',
-        dataParts: VeronaAPIService.stringifyAllValues(responseData)
+        responseProgress: hasData ? 'complete' : 'none',
+        dataParts: VeronaAPIService.stringifyAllValues(dataParts)
       }
     });
   }
 
-  private static stringifyAllValues(responseData: Record<string, Response[]>): Record<string, string> {
-    return Object.entries(responseData).reduce((acc: Record<string, string>, [key, value]) => {
+  private static stringifyAllValues(dataParts: Record<string, Response[]>): Record<string, string> {
+    return Object.entries(dataParts).reduce((acc: Record<string, string>, [key, value]) => {
       acc[key] = JSON.stringify(value);
       return acc;
     }, {});
   }
 
-  static sendFocusChanged(isFocused: boolean): void {
-    VeronaAPIService.sendMessage({
-      type: 'vopWindowFocusChangedNotification',
-      timeStamp: String(Date.now()),
-      hasFocus: isFocused
-    });
+  sendFocusChanged(isFocused: boolean): void {
+    this.veronaPost.sendVopWindowFocusChangedNotification(isFocused);
   }
-}
-
-// Incoming
-export interface StartCommand {
-  type: 'vopStartCommand';
-  sessionId: string;
-  unitDefinition: string;
-  unitState?: {
-    dataParts: Record<string, string>;
-  }
-  playerConfig?: PlayerConfig;
-}
-
-// Outgoing
-export interface ReadyNotification {
-  type: 'vopReadyNotification';
-  metadata: string;
-}
-
-export interface StateChangeNotification {
-  type: 'vopStateChangedNotification';
-  sessionId: string;
-  timeStamp: string;
-  unitState: UnitState;
-  log?: LogEntry[];
-}
-
-interface UnitState {
-  dataParts: Record<string, string>;
-  presentationProgress: string;
-  responseProgress: string;
-  unitStateDataType: string;
-}
-
-export interface Response {
-  id: string;
-  status: 'VALUE_CHANGED' | 'CODING_COMPLETE';
-  value: number | number[];
-  subform?: string;
-  code?: number;
-  score?: number;
-}
-
-interface LogEntry {
-  timeStamp: string;
-  key: string;
-  content: string;
-}
-
-export interface NavRequestNotification {
-  type: 'vopUnitNavigationRequestedNotification';
-  sessionId: string;
-  target: string;
-}
-
-export interface FocusChangeNotification {
-  type: 'vopWindowFocusChangedNotification';
-  timeStamp: string;
-  hasFocus: boolean;
 }

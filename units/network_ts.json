@@ -1,0 +1,38 @@
+{
+  "id": "syscheck-unit-definition",
+  "version": "0.1",
+  "viewType": "NETWORK",
+  "viewParameters": {
+    "download": {
+      "fileList": [
+        "test1.json",
+        "test2.json",
+        "test3.json"
+      ],
+      "minSpeed": 100000,
+      "goodSpeed": 320000,
+      "maxDeviance": 20000,
+      "maxErrorPerSequence": 0,
+      "maxSequenceRepetition": 3,
+      "message": "Download speed is too slow."
+    },
+    "messages": {
+      "title": "Prüfung der Netzwerkgeschwindigkeit",
+      "measuring_download": "Downloadgeschwindigkeit wird gemessen…",
+      "measuring_upload": "Uploadgeschwindigkeit wird gemessen…",
+      "done": "Die Netzwerkprüfung ist abgeschlossen.",
+      "download_label": "Download",
+      "upload_label": "Upload",
+      "download_row_label": "Geschwindigkeit-Download",
+      "upload_row_label": "Geschwindigkeit-Upload",
+      "success": "Your connection is good.",
+      "error": "Connection not possible.",
+      "slow": "Your connection is too slow.",
+      "success_lead": "Verbindung erfolgreich!",
+      "error_lead": "Ihr Endgerät erfüllt nicht alle Anforderungen!",
+      "slow_lead": "Ihre Verbindung ist eingeschränkt!",
+      "instructions_button": "Anleitung anzeigen",
+      "next_step_button": "Zum nächsten Schritt"
+    }
+  }
+}

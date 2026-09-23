@@ -11,6 +11,10 @@
           "minVersion": "143"
         },
         {
+          "browser": "firefox",
+          "minVersion": "143"
+        },
+        {
           "browser": "safari",
           "minVersion": "145",
           "message": "min required version: 145"
@@ -49,15 +53,44 @@
           "height": 800
         }
       ]
+    },
+    "touch": {
+      "enabled": true
+    },
+    "webgl": {
+      "enabled": true
     }
   },
   "messages": {
+    "title": "Ermittlung von Systemdaten",
+    "intro_text": "Die Systemdaten Ihres Endgeräts werden automatisch ermittelt und tabellarisch angezeigt. Links stehen die Systemdaten, rechts davon wird der ermittelte Wert angezeigt.",
+    "intro_scenarios": "Nach Ermittlung der Systemdaten, sind folgende Szenarien möglich:",
+    "intro_scenario_ok": "Ein grünes Häkchen zeigt, dass alle Anforderungen erfüllt sind. Sie müssen nichts weiter tun.",
+    "intro_scenario_error": "Ein rotes Warnsymbol zeigt an, dass eine Anforderung nicht erfüllt ist. Klicken Sie in diesem Fall auf den Button „Anleitung anzeigen“, um konkrete Schritte zur Behebung zu erhalten.",
+    "intro_note": "Für eine Durchführung eines Tests mit Ihrem Endgerät ist die vollständige Erfüllung aller Anforderungen erforderlich.",
+    "browser_label": "Browser",
+    "os_label": "Betriebssystem",
+    "resolution_label": "Bildschirmauflösung",
+    "device_type_label": "Gerätetyp",
+    "window_resolution_label": "Fensterauflösung",
+    "touch_label": "Touch-Eingabe",
+    "webgl_label": "WebGL",
+    "touch_value_yes": "Touchscreen erkannt",
+    "touch_value_no": "Kein Touchscreen erkannt",
+    "webgl_value_yes": "WebGL wird unterstützt",
+    "webgl_value_no": "WebGL wird nicht unterstützt",
     "success": "Your system is good.",
     "error": "Your system is not supported.",
+    "success_lead": "Ihr Endgerät erfüllt alle Anforderungen!",
+    "error_lead": "Ihr Endgerät erfüllt nicht alle Anforderungen!",
     "os_not_supported": "Your OS is not supported.",
     "browser_not_supported": "Your browser is not supported.",
     "resolution_not_supported": "Your screen resolution is not supported.",
     "os_version_not_supported": "Your OS version is not supported.",
-    "browser_version_not_supported": "Your browser version is not supported."
+    "browser_version_not_supported": "Your browser version is not supported.",
+    "touch_not_supported": "Ihr Gerät verfügt über eine Touch-Eingabe, die für diesen Test nicht zulässig ist.",
+    "webgl_not_supported": "Ihr Browser unterstützt WebGL nicht.",
+    "instructions_button": "Anleitung anzeigen",
+    "next_step_button": "Zum nächsten Schritt"
   }
 }

@@ -1,17 +1,18 @@
-import { Component, HostListener, OnInit, signal } from '@angular/core';
+import {
+  Component, HostListener, inject, OnInit, signal
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { fromEvent } from 'rxjs';
 
 import {
   NetworkViewParameters, SystemCheckMessages, SystemContextViewParameters, Unit
 } from './interfaces/unit';
 import { FileService } from './services/file.service';
 import { Welcome } from './views/welcome/welcome';
-import { SystemCheck } from './views/system-check/system-check';
+import { SystemCheck, SystemCheckState } from './views/system-check/system-check';
 import { NetworkCheck } from './views/network-check/network-check';
 
-import { PlayerConfig } from '../../../verona/verona';
-import { StartCommand, VeronaAPIService } from 'player/src/app/verona-api.service';
+import { VopStartCommand } from '../../../verona/verona';
+import { VeronaAPIService } from 'player/src/app/verona-api.service';
 
 @Component({
   selector: 'syscheck-player',
@@ -25,26 +26,19 @@ import { StartCommand, VeronaAPIService } from 'player/src/app/verona-api.servic
   styleUrl: 'app.scss'
 })
 export class App implements OnInit {
+  private readonly veronaAPI = inject(VeronaAPIService);
+
   isStandalone = window === window.parent;
   unit = signal<Unit | undefined>(undefined);
-  playerConfig = signal<PlayerConfig | undefined>(undefined);
-
-  constructor() {
-    fromEvent(window, 'message')
-      .subscribe((event: Event): void => {
-        VeronaAPIService.handleMessage((event as MessageEvent).data);
-      });
-  }
 
   ngOnInit(): void {
-    VeronaAPIService.startCommand$
-      .subscribe((message: StartCommand): void => {
+    this.veronaAPI.startCommand$
+      .subscribe((message: VopStartCommand): void => {
         if (!message.unitDefinition) return;
         this.unit.set(JSON.parse(message.unitDefinition));
-        this.playerConfig.set(message.playerConfig);
-        VeronaAPIService.sendState({});
+        this.veronaAPI.sendState({});
       });
-    VeronaAPIService.sendReady();
+    this.veronaAPI.sendReady();
   }
 
   get systemContextViewParameters(): SystemContextViewParameters {
@@ -59,21 +53,31 @@ export class App implements OnInit {
     return this.unit()?.messages ?? {};
   }
 
+  get resourceURL(): string | undefined {
+    return this.veronaAPI.resourceURL;
+  }
+
+  onSystemCheckStateChanged(state: SystemCheckState): void {
+    this.veronaAPI.sendState({ ...state });
+  }
+
+  onNextStep(): void {
+    this.veronaAPI.sendNavRequest();
+  }
+
   async loadUnitFromFile(eventTarget: EventTarget | null): Promise<void> {
     this.unit.set(undefined);
     const loadedUnit = await FileService.readFileAsText((eventTarget as HTMLInputElement).files?.[0] as File);
     this.unit.set(JSON.parse(loadedUnit));
   }
 
-  // eslint-disable-next-line class-methods-use-this
   @HostListener('window:blur')
   onBlur() {
-    VeronaAPIService.sendFocusChanged(false);
+    this.veronaAPI.sendFocusChanged(false);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   @HostListener('window:focus')
   onFocus() {
-    VeronaAPIService.sendFocusChanged(true);
+    this.veronaAPI.sendFocusChanged(true);
   }
 }

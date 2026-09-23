@@ -21,6 +21,7 @@ export class VeronaPostService {
 
   private sendMessage(message: VopMessage): void {
     this.postTarget.postMessage(message, '*');
+    console.log('verona message sent', message);
   }
 
   sendVopStateChangedNotification(values: {
