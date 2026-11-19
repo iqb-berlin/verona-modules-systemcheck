@@ -4,7 +4,7 @@ import {
 
 import { CheckRow, CheckRowStatus } from '../../components/check-row/check-row';
 import { NetworkViewParameters, SpeedCheckParameters } from '../../interfaces/unit';
-import { CheckState, toSharedParameters } from '../../interfaces/model';
+import { CheckState, toResponse, toSharedParameters } from '../../interfaces/model';
 import { SpeedTestResult, SpeedTestService } from '../../services/speed-test.service';
 
 export type SpeedRating = 'good' | 'ok' | 'insufficient';
@@ -21,6 +21,8 @@ export interface DirectionResult {
 }
 
 function averageBytesPerSecond(results: SpeedTestResult[]): number {
+  // nothing measured (no items, urlList or fileList configured): avoid 0/0 = NaN
+  if (results.length === 0) return 0;
   return results.reduce((sum, r) => sum + (r.size / (r.durationMs / 1000)), 0) / results.length;
 }
 
@@ -35,6 +37,8 @@ async function runConvergingSequences(
       : NaN;
     // eslint-disable-next-line no-await-in-loop
     const results = await runSequence();
+    // nothing to measure: no data to rate the connection by, so it can't count as good
+    if (results.length === 0) return { averageBytesPerSecond: 0, unstable: true, connectionFailed: false };
     const errors = results.filter(r => r.error !== null).length;
     const sequenceAverage = averageBytesPerSecond(results);
     if (errors > params.maxErrorPerSequence) {
@@ -178,10 +182,13 @@ export class NetworkCheck implements OnInit {
       const result = await this.runDirection('download', messages?.download_row_label ?? '', download, size => this.speedTest.benchmarkDownloadSize(this.apiBaseUrl(), size), extraUrls, resolvedFiles);
       this.downloadResult.set(result);
       console.log('result', result);
+      const kbitActual = toKbit(result.averageBytesPerSecond);
       this.stateChanged.emit({
-        dataParts: {},
+        dataParts: {
+          download: [toResponse('download', kbitActual, result.status === 'ok')]
+        },
         sharedParameters: toSharedParameters({
-          download_kbit_actual: toKbit(result.averageBytesPerSecond),
+          download_kbit_actual: kbitActual,
           download_kbit_desired: toKbit(download.minSpeed),
           download_rating: result.connectionFailed ? 'no_connection' : result.rating
         })
@@ -241,7 +248,15 @@ export class NetworkCheck implements OnInit {
       rating,
       connectionFailed: result.connectionFailed,
       status: statusOf(rating),
-      message: rating === 'good' ? undefined : params.message
+      message: this.rowMessage(rating, result.connectionFailed, params)
     };
+  }
+
+  private rowMessage(rating: SpeedRating, connectionFailed: boolean, params: SpeedCheckParameters): string | undefined {
+    if (connectionFailed) {
+      const messages = this.messages();
+      return messages?.no_connection ?? messages?.error ?? params.message;
+    }
+    return rating === 'good' ? undefined : params.message;
   }
 }

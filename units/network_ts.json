@@ -24,6 +24,7 @@
       "download_row_label": "Geschwindigkeit-Download",
       "success": "Your connection is good.",
       "error": "Connection not possible.",
+      "no_connection": "Es konnte keine Verbindung zum Server hergestellt werden. Bitte prüfen Sie Ihre Internetverbindung.",
       "insufficient": "Your connection is too slow or unstable for the test. Required is at least {min_speed}.",
       "slow": "Your connection is too slow.",
       "success_lead": "Verbindung erfolgreich!",

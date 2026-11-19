@@ -113,6 +113,8 @@ export interface NetworkMessages {
   success?: string;
   /** shown only when no connection was possible at all */
   error?: string;
+  /** shown in the download row when no connection was possible at all; falls back to `error` */
+  no_connection?: string;
   /** shown when the connection works, but is too slow or unstable; {min_speed} is replaced by the required speed */
   insufficient?: string;
   slow?: string;

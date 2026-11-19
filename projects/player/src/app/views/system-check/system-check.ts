@@ -10,15 +10,9 @@ import {
   CheckedRowId, evaluateBrowser, evaluateOs, evaluateResolution, evaluateTouch, evaluateWebgl,
   formatResolution, SystemCheckRowId, SystemInfoRow
 } from '../../services/system-evaluation';
-import { CheckState, toSharedParameters } from '../../interfaces/model';
+import { CheckState, toResponse, toSharedParameters } from '../../interfaces/model';
 
 export type SystemCheckState = Record<CheckedRowId, Response[]>;
-
-function toResponse(id: string, value: string, ok: boolean): Response {
-  return {
-    id, status: 'CODING_COMPLETE', value, score: ok ? 1 : 0
-  };
-}
 
 /** 'ok' | 'warning' | 'failed', or 'unchecked' when no requirement is configured for the row */
 function toRating(row: SystemInfoRow): string {
