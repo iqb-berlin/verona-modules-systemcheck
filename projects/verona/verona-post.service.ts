@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 
 import {
-  LogData,
-  NavigationTarget,
-  PlayerState,
   UnitState,
-  VopError,
+  PlayerState,
+  LogEntry,
+  VeronaMetaData,
   VopMessage,
-  VopMetaData,
-  VopStateChangedNotification
-} from './verona';
+  VopError,
+  NavigationTarget,
+  WidgetParameter,
+  WidgetType,
+  SharedParameter
+} from './verona.interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -17,35 +19,30 @@ import {
 
 export class VeronaPostService {
   sessionID: string | undefined;
-  postTarget: Window = window.parent;
+  private postTarget: Window = window.parent;
+
+  setPostTarget(postTarget: Window): void {
+    this.postTarget = postTarget;
+  }
 
   private sendMessage(message: VopMessage): void {
     this.postTarget.postMessage(message, '*');
-    console.log('verona message sent', message);
   }
 
   sendVopStateChangedNotification(values: {
     unitState?: UnitState,
     playerState?: PlayerState,
-    log?: LogData[]
+    log?: LogEntry[]
   }): void {
-    this.sendMessage(this.createVopStateChangedNotification(values));
-  }
-
-  private createVopStateChangedNotification(values: {
-    unitState?: UnitState,
-    playerState?: PlayerState,
-    log?: LogData[]
-  }): VopStateChangedNotification {
-    return {
+    this.sendMessage({
       type: 'vopStateChangedNotification',
       sessionId: this.sessionID as string,
-      timeStamp: Date.now(),
+      timeStamp: Date.now().toString(),
       ...(values)
-    };
+    });
   }
 
-  sendReadyNotification(playerMetadata: VopMetaData): void {
+  sendVopReadyNotification(playerMetadata: VeronaMetaData): void {
     this.sendMessage({
       type: 'vopReadyNotification',
       metadata: playerMetadata
@@ -72,8 +69,22 @@ export class VeronaPostService {
   sendVopWindowFocusChangedNotification(focused: boolean): void {
     this.sendMessage({
       type: 'vopWindowFocusChangedNotification',
-      timeStamp: Date.now(),
+      timeStamp: Date.now().toString(),
       hasFocus: focused
+    });
+  }
+
+  sendVopWidgetCall(values: {
+    callId?: string;
+    widgetType: WidgetType;
+    parameters?: WidgetParameter[];
+    sharedParameters?: SharedParameter[];
+    state?: string;
+  }): void {
+    this.sendMessage({
+      type: 'vopWidgetCall',
+      sessionId: this.sessionID as string,
+      ...(values)
     });
   }
 }

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { VopStartCommand } from '../../../verona/verona';
+import { VopStartCommand } from '../../../verona/verona.interfaces';
 import { VeronaAPIService } from './verona-api.service';
 
 function dispatchVopMessage(data: unknown): void {
@@ -95,6 +95,18 @@ describe('VeronaAPIService', () => {
     service.sendState({});
     const [withoutData] = postMessageSpy.mock.calls.at(-1) as [{ unitState: { responseProgress: string } }, string];
     expect(withoutData.unitState.responseProgress).toBe('none');
+  });
+
+  it('sendState posts sharedParameters as playerState, and omits playerState when none are given', () => {
+    service.sendState({}, [{ key: 'webgl', value: 'true' }]);
+    const [withShared] = postMessageSpy.mock.calls.at(-1) as [{
+      playerState?: { sharedParameters: { key: string; value?: string }[] }
+    }, string];
+    expect(withShared.playerState?.sharedParameters).toEqual([{ key: 'webgl', value: 'true' }]);
+
+    service.sendState({});
+    const [withoutShared] = postMessageSpy.mock.calls.at(-1) as [{ playerState?: unknown }, string];
+    expect(withoutShared.playerState).toBeUndefined();
   });
 
   it('sendFocusChanged posts a vopWindowFocusChangedNotification with the given focus state', () => {

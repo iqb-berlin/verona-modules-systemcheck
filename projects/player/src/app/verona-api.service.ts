@@ -1,9 +1,13 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Response } from '@iqbspecs/response/response.interface';
 
 import { VeronaPostService } from '../../../verona/verona-post.service';
 import { VeronaSubscriptionService } from '../../../verona/verona-subscription.service';
-import { UnitStateDataType, VopMetaData, VopStartCommand } from '../../../verona/verona';
+import {
+  NavigationTarget, SharedParameter, VeronaMetaData, VopStartCommand
+} from '../../../verona/verona.interfaces';
+
+const UnitStateDataType = 'iqb-standard@2.0';
 
 /**
  * Thin adapter over VeronaPostService/VeronaSubscriptionService (projects/verona) tailored
@@ -19,10 +23,17 @@ export class VeronaAPIService {
 
   readonly startCommand$ = this.veronaSubscription.vopStartCommand;
 
+  /** shared parameters the host collected from other units, e.g. the system and network check results */
+  readonly sharedParameters = signal<SharedParameter[]>([]);
+
   constructor() {
     this.startCommand$.subscribe((message: VopStartCommand) => {
       this.veronaPost.sessionID = message.sessionId;
       this.veronaSubscription.resourceURL = message.playerConfig?.directDownloadUrl;
+      this.sharedParameters.set(message.playerConfig?.sharedParameters ?? []);
+    });
+    this.veronaSubscription.vopPlayerConfigChangedNotification.subscribe(message => {
+      if (message.playerConfig.sharedParameters) this.sharedParameters.set(message.playerConfig.sharedParameters);
     });
   }
 
@@ -32,15 +43,15 @@ export class VeronaAPIService {
 
   sendReady(): void {
     const metadataText = document.getElementById('meta_data')?.textContent;
-    const metadata = (metadataText ? JSON.parse(metadataText) : {}) as VopMetaData;
-    this.veronaPost.sendReadyNotification(metadata);
+    const metadata = (metadataText ? JSON.parse(metadataText) : {}) as VeronaMetaData;
+    this.veronaPost.sendVopReadyNotification(metadata);
   }
 
-  sendNavRequest(): void {
-    this.veronaPost.sendVopUnitNavigationRequestedNotification('next');
+  sendNavRequest(target: NavigationTarget = 'next'): void {
+    this.veronaPost.sendVopUnitNavigationRequestedNotification(target);
   }
 
-  sendState(dataParts: Record<string, Response[]>): void {
+  sendState(dataParts: Record<string, Response[]>, sharedParameters?: SharedParameter[]): void {
     const hasData = Object.keys(dataParts).length > 0;
     this.veronaPost.sendVopStateChangedNotification({
       unitState: {
@@ -48,7 +59,8 @@ export class VeronaAPIService {
         presentationProgress: 'complete',
         responseProgress: hasData ? 'complete' : 'none',
         dataParts: VeronaAPIService.stringifyAllValues(dataParts)
-      }
+      },
+      ...(sharedParameters?.length ? { playerState: { sharedParameters } } : {})
     });
   }
 

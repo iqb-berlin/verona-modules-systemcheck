@@ -1,0 +1,39 @@
+<div class="system-check">
+  <h1 class="system-check__title">{{ messages()?.title }}</h1>
+
+  <div class="system-check__intro">
+    <p>{{ messages()?.intro_text }}</p>
+    <p>{{ messages()?.intro_scenarios }}</p>
+    <ul>
+      <li>{{ messages()?.intro_scenario_ok }}</li>
+      <li>{{ messages()?.intro_scenario_error }}</li>
+    </ul>
+    <p class="system-check__intro-note">{{ messages()?.intro_note }}</p>
+  </div>
+
+  <ul class="system-check__table">
+    @for (row of rows(); track row.id) {
+      <syscheck-check-row
+        [label]="row.label"
+        [detected]="row.detected"
+        [status]="row.status"
+        [message]="row.message"
+        [expanded]="expandedRows().has(row.id)"
+        [instructionsButtonLabel]="messages()?.instructions_button ?? ''"
+        [showIcon]="row.id !== 'touch' && row.id !== 'webgl'"
+        (toggleInstructions)="toggleInstructions(row.id)"
+      />
+    }
+  </ul>
+
+  @if (hasChecks() && overallMessage(); as message) {
+    <div class="system-check__banner" [class.system-check__banner--error]="!allPassed()">
+      <span class="system-check__banner-icon" aria-hidden="true">{{ allPassed() ? '✓' : '⚠' }}</span>
+      <p><strong>{{ bannerLead() }}</strong> {{ message }}</p>
+    </div>
+  }
+
+  <button type="button" class="system-check__next-btn" (click)="goToNextStep()">
+    › {{ messages()?.next_step_button }}
+  </button>
+</div>

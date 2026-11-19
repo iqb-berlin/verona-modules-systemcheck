@@ -1,0 +1,65 @@
+{
+  "type": "vopStartCommand",
+  "sessionId": "report-simulation",
+  "unitDefinition": "{\n  \"id\": \"syscheck-unit-definition\",\n  \"version\": \"0.1\",\n  \"viewType\": \"REPORT\",\n  \"viewParameters\": {\n    \"system\": {\n      \"browser\": {\n        \"enabled\": true,\n        \"limits\": [\n          {\n            \"browser\": \"chrome\",\n            \"minVersion\": \"143\"\n          },\n          {\n            \"browser\": \"firefox\",\n            \"minVersion\": \"143\"\n          },\n          {\n            \"browser\": \"safari\",\n            \"minVersion\": \"145\",\n            \"message\": \"min required version: 145\"\n          }\n        ]\n      },\n      \"os\": {\n        \"enabled\": true,\n        \"limits\": [\n          {\n            \"os\": \"windows\",\n            \"minVersion\": \"10\"\n          },\n          {\n            \"os\": \"ios\",\n            \"minVersion\": \"15\"\n          },\n          {\n            \"os\": \"android\",\n            \"minVersion\": \"12\"\n          },\n          {\n            \"os\": \"macos\",\n            \"minVersion\": \"12\"\n          },\n          {\n            \"os\": \"linux\",\n            \"minVersion\": \"1\"\n          }\n        ]\n      },\n      \"resolution\": {\n        \"enabled\": true,\n        \"limits\": [\n          {\n            \"width\": 1200,\n            \"height\": 800\n          }\n        ]\n      },\n      \"touch\": {\n        \"enabled\": true\n      },\n      \"webgl\": {\n        \"enabled\": true\n      }\n    },\n    \"messages\": {\n      \"title\": \"Bericht\",\n      \"system_section_title\": \"Ermittlung von Systemdaten\",\n      \"network_section_title\": \"Prüfung der Netzwerkgeschwindigkeit\",\n      \"browser_label\": \"Browser\",\n      \"os_label\": \"Betriebssystem\",\n      \"resolution_label\": \"Bildschirmauflösung\",\n      \"window_resolution_label\": \"Fensterauflösung\",\n      \"touch_label\": \"Touch-Eingabe\",\n      \"webgl_label\": \"WebGL\",\n      \"touch_value_yes\": \"Touchscreen erkannt\",\n      \"touch_value_no\": \"Kein Touchscreen erkannt\",\n      \"webgl_value_yes\": \"WebGL wird unterstützt\",\n      \"webgl_value_no\": \"WebGL wird nicht unterstützt\",\n      \"os_not_supported\": \"Your OS is not supported.\",\n      \"browser_not_supported\": \"Your browser is not supported.\",\n      \"resolution_not_supported\": \"Your screen resolution is not supported.\",\n      \"os_version_not_supported\": \"Your OS version is not supported.\",\n      \"browser_version_not_supported\": \"Your browser version is not supported.\",\n      \"os_version_not_detected\": \"Die Version Ihres Betriebssystems konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.\",\n      \"browser_version_not_detected\": \"Die Version Ihres Browsers konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.\",\n      \"touch_not_supported\": \"Ihr Gerät verfügt über eine Touch-Eingabe, die für diesen Test nicht zulässig ist.\",\n      \"webgl_not_supported\": \"Ihr Browser unterstützt WebGL nicht.\",\n      \"instructions_button\": \"Anleitung anzeigen\",\n      \"success_lead\": \"Ihr Endgerät erfüllt alle Anforderungen!\",\n      \"error_lead\": \"Ihr Endgerät erfüllt nicht alle Anforderungen!\",\n      \"download_row_label\": \"Geschwindigkeit-Download\",\n      \"download_desired_label\": \"Benötigte Geschwindigkeit\",\n      \"download_slow\": \"Ihre Verbindung ist eingeschränkt.\",\n      \"download_insufficient\": \"Ihre Verbindung ist zu langsam. Benötigt werden mindestens {min_speed}.\",\n      \"download_no_connection\": \"Es konnte keine Verbindung hergestellt werden.\",\n      \"missing_value\": \"nicht ermittelt\",\n      \"success\": \"Sie müssen nichts weiter tun.\",\n      \"error\": \"Klicken Sie auf den roten Button „Anleitung anzeigen“, um zu sehen wie Sie die Anforderung erfüllen können.\",\n      \"note_lead\": \"Hinweis:\",\n      \"note_text\": \"Die Ergebnisse des Systemchecks werden automatisch übermittelt. Bei Fragen oder Problemen wenden Sie sich bitte an den Anbieter:\",\n      \"contact_email\": \"platzhalter@iqb.hu-berlin.de\",\n      \"finish_button\": \"Systemcheck abschließen\",\n      \"print_button\": \"Drucken\"\n    }\n  }\n}\n",
+  "playerConfig": {
+    "sharedParameters": [
+      {
+        "key": "os_label",
+        "value": "Linux"
+      },
+      {
+        "key": "os_version",
+        "value": ""
+      },
+      {
+        "key": "resolution",
+        "value": "1280x800"
+      },
+      {
+        "key": "browser_label",
+        "value": "Chrome"
+      },
+      {
+        "key": "browser_version",
+        "value": "151.0.0.0"
+      },
+      {
+        "key": "window_resolution",
+        "value": "1020x760"
+      },
+      {
+        "key": "webgl",
+        "value": "true"
+      },
+      {
+        "key": "touchdevice",
+        "value": "false"
+      },
+      {
+        "key": "download_kbit_actual",
+        "value": "2180"
+      },
+      {
+        "key": "download_kbit_desired",
+        "value": "800"
+      },
+      {
+        "key": "download_rating",
+        "value": "ok"
+      },
+      {
+        "key": "os_rating",
+        "value": "warning"
+      },
+      {
+        "key": "browser_rating",
+        "value": "ok"
+      },
+      {
+        "key": "resolution_rating",
+        "value": "failed"
+      }
+    ]
+  }
+}

@@ -41,7 +41,8 @@
           "minVersion": "12"
         },
         {
-          "os": "linux"
+          "os": "linux",
+          "minVersion": "1"
         }
       ]
     },
@@ -88,6 +89,8 @@
     "resolution_not_supported": "Your screen resolution is not supported.",
     "os_version_not_supported": "Your OS version is not supported.",
     "browser_version_not_supported": "Your browser version is not supported.",
+    "os_version_not_detected": "Die Version Ihres Betriebssystems konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.",
+    "browser_version_not_detected": "Die Version Ihres Browsers konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.",
     "touch_not_supported": "Ihr Gerät verfügt über eine Touch-Eingabe, die für diesen Test nicht zulässig ist.",
     "webgl_not_supported": "Ihr Browser unterstützt WebGL nicht.",
     "instructions_button": "Anleitung anzeigen",

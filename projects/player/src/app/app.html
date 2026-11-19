@@ -3,7 +3,7 @@
     <button mat-stroked-button (click)="fileInput.click()">
       load unit
     </button>
-    <input #fileInput type="file" accept=".json" hidden (change)="loadUnitFromFile(fileInput)" />
+    <input #fileInput type="file" accept=".json" hidden (change)="loadUnitFromFile(fileInput); fileInput.value = ''" />
   </div>
 }
 
@@ -16,7 +16,7 @@
       <syscheck-player-system-check
         [viewParameters]="systemContextViewParameters"
         [messages]="systemCheckMessages"
-        (stateChanged)="onSystemCheckStateChanged($event)"
+        (stateChanged)="onStateChanged($event)"
         (nextStep)="onNextStep()"
       />
     }
@@ -24,7 +24,15 @@
       <syscheck-player-network-check
         [viewParameters]="networkViewParameters"
         [directDownloadUrl]="resourceURL"
+        (stateChanged)="onStateChanged($event)"
         (nextStep)="onNextStep()"
+      />
+    }
+    @case ('REPORT') {
+      <syscheck-player-report
+        [viewParameters]="reportViewParameters"
+        [sharedParameters]="sharedParameters()"
+        (finish)="onFinish()"
       />
     }
     @default {

@@ -1,0 +1,70 @@
+<div class="report">
+  <h1 class="report__title">{{ messages()?.title }}</h1>
+
+  <div class="report__sections">
+    @for (section of sections(); track section.id) {
+      <section class="report__section">
+        <button
+          type="button"
+          class="report__section-header"
+          [attr.aria-expanded]="expandedSections().has(section.id)"
+          (click)="toggleSection(section.id)"
+        >
+          <span class="report__section-title">{{ section.title }}</span>
+          @if (section.hasIssue) {
+            <span class="report__section-issue" aria-hidden="true">⚠</span>
+          }
+          <span
+            class="report__section-chevron"
+            [class.report__section-chevron--open]="expandedSections().has(section.id)"
+            aria-hidden="true"
+          >⌄</span>
+        </button>
+        @if (expandedSections().has(section.id)) {
+          <ul class="report__table">
+            @for (row of section.rows; track row.id) {
+              <syscheck-check-row
+                [label]="row.label"
+                [detected]="row.detected"
+                [status]="row.status"
+                [message]="row.message"
+                [expanded]="expandedRows().has(row.id)"
+                [instructionsButtonLabel]="messages()?.instructions_button ?? ''"
+                [showIcon]="row.showIcon ?? true"
+                (toggleInstructions)="toggleInstructions(row.id)"
+              />
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
+
+  @if (hasChecks() && overallMessage(); as message) {
+    <div class="report__banner" [class.report__banner--error]="!allPassed()">
+      <span class="report__banner-icon" aria-hidden="true">{{ allPassed() ? '✓' : '⚠' }}</span>
+      <p><strong>{{ bannerLead() }}</strong> {{ message }}</p>
+    </div>
+  }
+
+  @if (messages()?.note_text) {
+    <div class="report__banner report__banner--note">
+      <span class="report__banner-icon" aria-hidden="true">i</span>
+      <p>
+        <strong>{{ messages()?.note_lead }}</strong> {{ messages()?.note_text }}
+        @if (messages()?.contact_email; as email) {
+          <a [href]="'mailto:' + email">{{ email }}</a>
+        }
+      </p>
+    </div>
+  }
+
+  <div class="report__actions">
+    <button type="button" class="report__finish-btn" (click)="finish.emit()">
+      {{ messages()?.finish_button }}
+    </button>
+    <button type="button" class="report__print-btn" (click)="print()">
+      <span aria-hidden="true">🖶</span> {{ messages()?.print_button }}
+    </button>
+  </div>
+</div>

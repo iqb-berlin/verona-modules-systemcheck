@@ -1,5 +1,107 @@
 {
   "id": "syscheck-unit-definition",
   "version": "0.1",
-  "viewType": "REPORT"
+  "viewType": "REPORT",
+  "viewParameters": {
+    "system": {
+      "browser": {
+        "enabled": true,
+        "limits": [
+          {
+            "browser": "chrome",
+            "minVersion": "143"
+          },
+          {
+            "browser": "firefox",
+            "minVersion": "143"
+          },
+          {
+            "browser": "safari",
+            "minVersion": "145",
+            "message": "min required version: 145"
+          }
+        ]
+      },
+      "os": {
+        "enabled": true,
+        "limits": [
+          {
+            "os": "windows",
+            "minVersion": "10"
+          },
+          {
+            "os": "ios",
+            "minVersion": "15"
+          },
+          {
+            "os": "android",
+            "minVersion": "12"
+          },
+          {
+            "os": "macos",
+            "minVersion": "12"
+          },
+          {
+            "os": "linux",
+            "minVersion": "1"
+          }
+        ]
+      },
+      "resolution": {
+        "enabled": true,
+        "limits": [
+          {
+            "width": 1200,
+            "height": 800
+          }
+        ]
+      },
+      "touch": {
+        "enabled": true
+      },
+      "webgl": {
+        "enabled": true
+      }
+    },
+    "messages": {
+      "title": "Bericht",
+      "system_section_title": "Ermittlung von Systemdaten",
+      "network_section_title": "Prüfung der Netzwerkgeschwindigkeit",
+      "browser_label": "Browser",
+      "os_label": "Betriebssystem",
+      "resolution_label": "Bildschirmauflösung",
+      "window_resolution_label": "Fensterauflösung",
+      "touch_label": "Touch-Eingabe",
+      "webgl_label": "WebGL",
+      "touch_value_yes": "Touchscreen erkannt",
+      "touch_value_no": "Kein Touchscreen erkannt",
+      "webgl_value_yes": "WebGL wird unterstützt",
+      "webgl_value_no": "WebGL wird nicht unterstützt",
+      "os_not_supported": "Your OS is not supported.",
+      "browser_not_supported": "Your browser is not supported.",
+      "resolution_not_supported": "Your screen resolution is not supported.",
+      "os_version_not_supported": "Your OS version is not supported.",
+      "browser_version_not_supported": "Your browser version is not supported.",
+      "os_version_not_detected": "Die Version Ihres Betriebssystems konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.",
+      "browser_version_not_detected": "Die Version Ihres Browsers konnte nicht ermittelt werden. Bitte prüfen Sie selbst, ob sie die Anforderungen erfüllt.",
+      "touch_not_supported": "Ihr Gerät verfügt über eine Touch-Eingabe, die für diesen Test nicht zulässig ist.",
+      "webgl_not_supported": "Ihr Browser unterstützt WebGL nicht.",
+      "instructions_button": "Anleitung anzeigen",
+      "success_lead": "Ihr Endgerät erfüllt alle Anforderungen!",
+      "error_lead": "Ihr Endgerät erfüllt nicht alle Anforderungen!",
+      "download_row_label": "Geschwindigkeit-Download",
+      "download_desired_label": "Benötigte Geschwindigkeit",
+      "download_slow": "Ihre Verbindung ist eingeschränkt.",
+      "download_insufficient": "Ihre Verbindung ist zu langsam. Benötigt werden mindestens {min_speed}.",
+      "download_no_connection": "Es konnte keine Verbindung hergestellt werden.",
+      "missing_value": "nicht ermittelt",
+      "success": "Sie müssen nichts weiter tun.",
+      "error": "Klicken Sie auf den roten Button „Anleitung anzeigen“, um zu sehen wie Sie die Anforderung erfüllen können.",
+      "note_lead": "Hinweis:",
+      "note_text": "Die Ergebnisse des Systemchecks werden automatisch übermittelt. Bei Fragen oder Problemen wenden Sie sich bitte an den Anbieter:",
+      "contact_email": "platzhalter@iqb.hu-berlin.de",
+      "finish_button": "Systemcheck abschließen",
+      "print_button": "Drucken"
+    }
+  }
 }

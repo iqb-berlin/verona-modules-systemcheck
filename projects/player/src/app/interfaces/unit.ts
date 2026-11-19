@@ -4,7 +4,7 @@ export interface Unit {
   id: 'syscheck-unit-definition';
   version: string;
   viewType: viewTypes;
-  viewParameters?: SystemContextViewParameters | NetworkViewParameters;
+  viewParameters?: SystemContextViewParameters | NetworkViewParameters | ReportViewParameters;
   messages?: SystemCheckMessages;
   textOverrides?: Record<Textoverrides, string>;
 }
@@ -36,6 +36,8 @@ export interface SystemCheckMessages {
   resolution_not_supported?: string;
   os_version_not_supported?: string;
   browser_version_not_supported?: string;
+  os_version_not_detected?: string;
+  browser_version_not_detected?: string;
   touch_not_supported?: string;
   webgl_not_supported?: string;
   instructions_button?: string;
@@ -105,14 +107,14 @@ export interface DownloadCheckParameters extends SpeedCheckParameters {
 export interface NetworkMessages {
   title?: string;
   measuring_download?: string;
-  measuring_upload?: string;
   done?: string;
   download_label?: string;
-  upload_label?: string;
   download_row_label?: string;
-  upload_row_label?: string;
   success?: string;
+  /** shown only when no connection was possible at all */
   error?: string;
+  /** shown when the connection works, but is too slow or unstable; {min_speed} is replaced by the required speed */
+  insufficient?: string;
   slow?: string;
   success_lead?: string;
   error_lead?: string;
@@ -123,8 +125,31 @@ export interface NetworkMessages {
 
 export interface NetworkViewParameters {
   download?: DownloadCheckParameters;
-  upload?: SpeedCheckParameters;
   messages?: NetworkMessages;
+}
+
+export interface ReportMessages extends SystemCheckMessages {
+  system_section_title?: string;
+  network_section_title?: string;
+  window_resolution_label?: string;
+  download_row_label?: string;
+  download_desired_label?: string;
+  download_slow?: string;
+  /** {min_speed} is replaced by the required speed */
+  download_insufficient?: string;
+  download_no_connection?: string;
+  missing_value?: string;
+  note_lead?: string;
+  note_text?: string;
+  contact_email?: string;
+  finish_button?: string;
+  print_button?: string;
+}
+
+export interface ReportViewParameters {
+  /** requirements to rate the shared system values against; use the same as in the SYSTEM unit */
+  system?: SystemContextViewParameters;
+  messages?: ReportMessages;
 }
 
 type Textoverrides = 'report_sendToMail';

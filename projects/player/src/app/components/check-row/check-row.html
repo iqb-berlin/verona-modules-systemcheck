@@ -1,0 +1,21 @@
+<li class="check-row">
+  <div class="check-row__main">
+    <span class="check-row__label">{{ label() }}</span>
+    <span class="check-row__value">
+      @if (showIcon() && status(); as s) {
+        <span class="check-row__icon" [class.check-row__icon--warning]="s === 'warning'" [class.check-row__icon--failed]="s === 'failed'">
+          {{ s === 'ok' ? '✓' : '⚠' }}
+        </span>
+      }
+      {{ detected() }}
+    </span>
+    @if (status() && status() !== 'ok' && message()) {
+      <button type="button" class="check-row__instructions-btn" [class.check-row__instructions-btn--warning]="status() === 'warning'" (click)="toggleInstructions.emit()">
+        {{ instructionsButtonLabel() }}
+      </button>
+    }
+  </div>
+  @if (expanded() && message()) {
+    <p class="check-row__message">{{ message() }}</p>
+  }
+</li>

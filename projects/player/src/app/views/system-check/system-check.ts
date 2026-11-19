@@ -3,23 +3,14 @@ import {
 } from '@angular/core';
 import { Response } from '@iqbspecs/response/response.interface';
 
-import { CheckRow, CheckRowStatus } from '../../components/check-row/check-row';
-import {
-  BrowserLimit, OsLimit, SystemCheckMessages, SystemContextViewParameters
-} from '../../interfaces/unit';
+import { CheckRow } from '../../components/check-row/check-row';
+import { SystemCheckMessages, SystemContextViewParameters } from '../../interfaces/unit';
 import { SystemInfoService } from '../../services/system-info.service';
-
-export type CheckedRowId = 'browser' | 'os' | 'resolution' | 'touch' | 'webgl';
-export type SystemCheckRowId = CheckedRowId | 'deviceType' | 'windowResolution';
-
-export interface SystemInfoRow {
-  id: SystemCheckRowId;
-  label: string;
-  detected: string;
-  /** undefined = informational only, no requirement configured for this row */
-  status?: CheckRowStatus;
-  message?: string;
-}
+import {
+  CheckedRowId, evaluateBrowser, evaluateOs, evaluateResolution, evaluateTouch, evaluateWebgl,
+  formatResolution, SystemCheckRowId, SystemInfoRow
+} from '../../services/system-evaluation';
+import { CheckState, toSharedParameters } from '../../interfaces/model';
 
 export type SystemCheckState = Record<CheckedRowId, Response[]>;
 
@@ -29,58 +20,9 @@ function toResponse(id: string, value: string, ok: boolean): Response {
   };
 }
 
-function versionAtLeast(actual: string, required: string): boolean {
-  const actualParts = actual.split('.').map(part => Number(part) || 0);
-  const requiredParts = required.split('.').map(part => Number(part) || 0);
-  const length = Math.max(actualParts.length, requiredParts.length);
-  for (let i = 0; i < length; i += 1) {
-    const actualPart = actualParts[i] ?? 0;
-    const requiredPart = requiredParts[i] ?? 0;
-    if (actualPart !== requiredPart) return actualPart > requiredPart;
-  }
-  return true;
-}
-
-function evaluateNamedLimit(
-  id: CheckedRowId,
-  label: string,
-  detected: string,
-  limit: BrowserLimit | OsLimit | undefined,
-  detectedVersion: string,
-  notSupportedMessage: string | undefined,
-  versionNotSupportedMessage: string | undefined
-): SystemInfoRow {
-  if (!limit) {
-    return {
-      id, label, detected, status: 'warning', message: notSupportedMessage
-    };
-  }
-  if (!limit.minVersion) {
-    return {
-      id, label, detected, status: 'warning', message: limit.message ?? notSupportedMessage
-    };
-  }
-  const passed = versionAtLeast(detectedVersion, limit.minVersion);
-  return {
-    id, label, detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : (limit.message ?? versionNotSupportedMessage)
-  };
-}
-
-function evaluateBooleanCheck(
-  id: CheckedRowId,
-  label: string,
-  detectedValue: boolean,
-  valueYesText: string | undefined,
-  valueNoText: string | undefined,
-  isPassing: boolean,
-  enabled: boolean | undefined,
-  notSupportedMessage: string | undefined
-): SystemInfoRow {
-  const detected = detectedValue ? (valueYesText ?? '') : (valueNoText ?? '');
-  if (!enabled) return { id, label, detected };
-  return {
-    id, label, detected, status: isPassing ? 'ok' : 'failed', message: isPassing ? undefined : notSupportedMessage
-  };
+/** 'ok' | 'warning' | 'failed', or 'unchecked' when no requirement is configured for the row */
+function toRating(row: SystemInfoRow): string {
+  return row.status ?? 'unchecked';
 }
 
 @Component({
@@ -95,19 +37,38 @@ export class SystemCheck {
   viewParameters = input.required<SystemContextViewParameters>();
   messages = input<SystemCheckMessages>();
 
-  readonly stateChanged = output<SystemCheckState>();
+  readonly stateChanged = output<CheckState>();
   readonly nextStep = output<void>();
 
   readonly expandedRows = signal<ReadonlySet<SystemCheckRowId>>(new Set());
 
   constructor() {
-    effect(() => this.stateChanged.emit({
-      browser: [toResponse('browser', this.browserRow().detected, this.browserRow().status === 'ok')],
-      os: [toResponse('os', this.osRow().detected, this.osRow().status === 'ok')],
-      resolution: [toResponse('resolution', this.resolutionRow().detected, this.resolutionRow().status === 'ok')],
-      touch: [toResponse('touch', this.touchRow().detected, this.touchRow().status === 'ok')],
-      webgl: [toResponse('webgl', this.webglRow().detected, this.webglRow().status === 'ok')]
-    }));
+    effect(() => {
+      const screen = this.systemInfo.screenResolution;
+      const windowSize = this.systemInfo.windowResolution();
+      this.stateChanged.emit({
+        dataParts: {
+          browser: [toResponse('browser', this.browserRow().detected, this.browserRow().status === 'ok')],
+          os: [toResponse('os', this.osRow().detected, this.osRow().status === 'ok')],
+          resolution: [toResponse('resolution', this.resolutionRow().detected, this.resolutionRow().status === 'ok')],
+          touch: [toResponse('touch', this.touchRow().detected, this.touchRow().status === 'ok')],
+          webgl: [toResponse('webgl', this.webglRow().detected, this.webglRow().status === 'ok')]
+        } satisfies SystemCheckState,
+        sharedParameters: toSharedParameters({
+          os_label: this.systemInfo.osName,
+          os_version: this.systemInfo.osVersion,
+          resolution: `${screen.width}x${screen.height}`,
+          browser_label: this.systemInfo.browserName,
+          browser_version: this.systemInfo.browserVersion,
+          window_resolution: `${windowSize.width}x${windowSize.height}`,
+          webgl: this.hasWebGL,
+          touchdevice: this.systemInfo.hasTouch,
+          os_rating: toRating(this.osRow()),
+          browser_rating: toRating(this.browserRow()),
+          resolution_rating: toRating(this.resolutionRow())
+        })
+      });
+    });
   }
 
   toggleInstructions(id: SystemCheckRowId): void {
@@ -124,60 +85,28 @@ export class SystemCheck {
     this.nextStep.emit();
   }
 
-  readonly browserRow = computed<SystemInfoRow>(() => {
-    const name = this.systemInfo.browserName;
-    const version = this.systemInfo.browserVersion;
-    const detected = `${name} ${version}`.trim();
-    const config = this.viewParameters().browser;
-    const messages = this.messages();
-    const label = messages?.browser_label ?? '';
-    if (!config?.enabled) return { id: 'browser', label, detected };
-    const limit = config.limits.find(l => l.browser.toLowerCase() === name.toLowerCase());
-    return evaluateNamedLimit('browser', label, detected, limit, version, messages?.browser_not_supported, messages?.browser_version_not_supported);
-  });
+  readonly browserRow = computed<SystemInfoRow>(() => evaluateBrowser(
+    this.systemInfo.browserName, this.systemInfo.browserVersion, this.viewParameters(), this.messages()
+  ));
 
-  readonly osRow = computed<SystemInfoRow>(() => {
-    const name = this.systemInfo.osName;
-    const version = this.systemInfo.osVersion;
-    const detected = `${name} ${version}`.trim();
-    const config = this.viewParameters().os;
-    const messages = this.messages();
-    const label = messages?.os_label ?? '';
-    if (!config?.enabled) return { id: 'os', label, detected };
-    const limit = config.limits.find(l => l.os.toLowerCase() === name.toLowerCase());
-    return evaluateNamedLimit('os', label, detected, limit, version, messages?.os_not_supported, messages?.os_version_not_supported);
-  });
+  readonly osRow = computed<SystemInfoRow>(() => evaluateOs(
+    this.systemInfo.osName, this.systemInfo.osVersion, this.viewParameters(), this.messages()
+  ));
 
   readonly resolutionRow = computed<SystemInfoRow>(() => {
     const { width, height } = this.systemInfo.screenResolution;
-    const detected = `${width} x ${height} Pixel`;
-    const config = this.viewParameters().resolution;
-    const label = this.messages()?.resolution_label ?? '';
-    if (!config?.enabled) return { id: 'resolution', label, detected };
-    const passed = config.limits.length === 0
-      || config.limits.some(limit => width >= limit.width && height >= limit.height);
-    return {
-      id: 'resolution', label, detected, status: passed ? 'ok' : 'failed', message: passed ? undefined : this.messages()?.resolution_not_supported
-    };
+    return evaluateResolution(width, height, this.viewParameters(), this.messages());
   });
 
-  readonly touchRow = computed<SystemInfoRow>(() => {
-    const hasTouch = this.systemInfo.hasTouch;
-    const messages = this.messages();
-    return evaluateBooleanCheck(
-      'touch', messages?.touch_label ?? '', hasTouch, messages?.touch_value_yes, messages?.touch_value_no,
-      !hasTouch, this.viewParameters().touch?.enabled, messages?.touch_not_supported
-    );
-  });
+  readonly touchRow = computed<SystemInfoRow>(
+    () => evaluateTouch(this.systemInfo.hasTouch, this.viewParameters(), this.messages())
+  );
 
-  readonly webglRow = computed<SystemInfoRow>(() => {
-    const hasWebGL = this.systemInfo.hasWebGL;
-    const messages = this.messages();
-    return evaluateBooleanCheck(
-      'webgl', messages?.webgl_label ?? '', hasWebGL, messages?.webgl_value_yes, messages?.webgl_value_no,
-      hasWebGL, this.viewParameters().webgl?.enabled, messages?.webgl_not_supported
-    );
-  });
+  private readonly hasWebGL = this.systemInfo.hasWebGL;
+
+  readonly webglRow = computed<SystemInfoRow>(
+    () => evaluateWebgl(this.hasWebGL, this.viewParameters(), this.messages())
+  );
 
   readonly deviceTypeRow = computed<SystemInfoRow>(() => ({
     id: 'deviceType', label: this.messages()?.device_type_label ?? '', detected: this.systemInfo.deviceType
@@ -185,7 +114,7 @@ export class SystemCheck {
 
   readonly windowResolutionRow = computed<SystemInfoRow>(() => {
     const { width, height } = this.systemInfo.windowResolution();
-    return { id: 'windowResolution', label: this.messages()?.window_resolution_label ?? '', detected: `${width} x ${height} Pixel` };
+    return { id: 'windowResolution', label: this.messages()?.window_resolution_label ?? '', detected: formatResolution(width, height) };
   });
 
   readonly rows = computed<SystemInfoRow[]>(() => [

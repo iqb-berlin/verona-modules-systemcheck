@@ -4,14 +4,16 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 
 import {
-  NetworkViewParameters, SystemCheckMessages, SystemContextViewParameters, Unit
+  NetworkViewParameters, ReportViewParameters, SystemCheckMessages, SystemContextViewParameters, Unit
 } from './interfaces/unit';
+import { CheckState } from './interfaces/model';
 import { FileService } from './services/file.service';
 import { Welcome } from './views/welcome/welcome';
-import { SystemCheck, SystemCheckState } from './views/system-check/system-check';
+import { SystemCheck } from './views/system-check/system-check';
 import { NetworkCheck } from './views/network-check/network-check';
+import { Report } from './views/report/report';
 
-import { VopStartCommand } from '../../../verona/verona';
+import { VopStartCommand } from '../../../verona/verona.interfaces';
 import { VeronaAPIService } from 'player/src/app/verona-api.service';
 
 @Component({
@@ -20,7 +22,8 @@ import { VeronaAPIService } from 'player/src/app/verona-api.service';
     MatButtonModule,
     Welcome,
     SystemCheck,
-    NetworkCheck
+    NetworkCheck,
+    Report
   ],
   templateUrl: 'app.html',
   styleUrl: 'app.scss'
@@ -30,6 +33,7 @@ export class App implements OnInit {
 
   isStandalone = window === window.parent;
   unit = signal<Unit | undefined>(undefined);
+  readonly sharedParameters = this.veronaAPI.sharedParameters;
 
   ngOnInit(): void {
     this.veronaAPI.startCommand$
@@ -49,6 +53,10 @@ export class App implements OnInit {
     return (this.unit()?.viewParameters as NetworkViewParameters) ?? {};
   }
 
+  get reportViewParameters(): ReportViewParameters {
+    return (this.unit()?.viewParameters as ReportViewParameters) ?? {};
+  }
+
   get systemCheckMessages(): SystemCheckMessages {
     return this.unit()?.messages ?? {};
   }
@@ -57,18 +65,31 @@ export class App implements OnInit {
     return this.veronaAPI.resourceURL;
   }
 
-  onSystemCheckStateChanged(state: SystemCheckState): void {
-    this.veronaAPI.sendState({ ...state });
+  onStateChanged(state: CheckState): void {
+    this.veronaAPI.sendState(state.dataParts, state.sharedParameters);
   }
 
   onNextStep(): void {
     this.veronaAPI.sendNavRequest();
   }
 
+  onFinish(): void {
+    this.veronaAPI.sendNavRequest('end');
+  }
+
+  /**
+   * Accepts either a bare unit definition or a complete vopStartCommand. The latter is posted to
+   * this window, so it takes the same route as one from a host - e.g. to simulate the sharedParameters
+   * a host collected from the system and network units.
+   */
   async loadUnitFromFile(eventTarget: EventTarget | null): Promise<void> {
     this.unit.set(undefined);
-    const loadedUnit = await FileService.readFileAsText((eventTarget as HTMLInputElement).files?.[0] as File);
-    this.unit.set(JSON.parse(loadedUnit));
+    const loaded = JSON.parse(await FileService.readFileAsText((eventTarget as HTMLInputElement).files?.[0] as File));
+    if (loaded.type === 'vopStartCommand') {
+      window.postMessage(loaded, '*');
+    } else {
+      this.unit.set(loaded);
+    }
   }
 
   @HostListener('window:blur')

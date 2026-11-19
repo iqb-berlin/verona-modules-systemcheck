@@ -1,0 +1,47 @@
+<div class="network-check">
+  <h1 class="network-check__title">{{ messages()?.title }}</h1>
+
+  <p class="network-check__status">{{ statusMessage() }}</p>
+
+  <div class="network-check__summary">
+    <div class="network-check__metrics">
+      <div class="network-check__metric">
+        <div class="network-check__metric-value">
+          {{ downloadResult() ? formatMbit(downloadResult()!.averageBytesPerSecond) + ' Mbit/s' : '…' }}
+        </div>
+        <div class="network-check__metric-label">{{ messages()?.download_label }}</div>
+      </div>
+    </div>
+
+    @if (!running()) {
+      <svg viewBox="0 0 120 120" class="network-check__ring" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" />
+      </svg>
+    }
+  </div>
+
+  <ul class="network-check__table">
+    @for (row of rows(); track row.id) {
+      <syscheck-check-row
+        [label]="row.label"
+        [detected]="'∅ ' + formatMbit(row.averageBytesPerSecond) + ' Mbit/s'"
+        [status]="row.status"
+        [message]="row.message"
+        [expanded]="expandedRows().has(row.id)"
+        [instructionsButtonLabel]="messages()?.instructions_button ?? ''"
+        (toggleInstructions)="toggleInstructions(row.id)"
+      />
+    }
+  </ul>
+
+  @if (overallMessage(); as message) {
+    <div class="network-check__banner" [class.network-check__banner--error]="overallRating() === 'insufficient'">
+      <span class="network-check__banner-icon" aria-hidden="true">{{ overallRating() === 'insufficient' ? '⚠' : '✓' }}</span>
+      <p><strong>{{ bannerLead() }}</strong> {{ message }}</p>
+    </div>
+  }
+
+  <button type="button" class="network-check__next-btn" [disabled]="running()" (click)="goToNextStep()">
+    › {{ messages()?.next_step_button }}
+  </button>
+</div>
